@@ -1,46 +1,47 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useDriversStore } from '@/stores/drivers'
+import { useTrucksStore } from '@/stores/trucks'
+
+const driverStore = useDriversStore()
+const truckStore = useTrucksStore()
+
+const trucksWithDrivers = computed(() => {
+  return truckStore.trucks.map((truck) => {
+    const drivers = driverStore.drivers.filter((d) => d.assignedTruckIds?.includes(truck.id))
+    return { ...truck, drivers }
+  })
+})
+</script>
+
 <template>
-  <div class="p-8 min-h-screen">
-    <h1 class="text-3xl font-semibold mb-6">Панель администратора</h1>
+  <div class="p-4">
+    <h1 class="text-2xl mb-8">This is Your Dashboard</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Счётчики -->
-      <Card>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-secondary uppercase">Грузовиков</p>
-            <p class="text-2xl font-bold">{{ trucks.length }}</p>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <UCard v-for="truck in trucksWithDrivers" :key="truck.id">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">#{{ truck.id }} - {{ truck.registeredPlate }}</div>
+            <UBadge :color="truck.type === 'construction' ? 'orange' : 'blue'" variant="subtle">
+              {{ truck.type }}
+            </UBadge>
           </div>
-          <!-- Иконка можно заменить на SVG из Heroicons или SF Symbols -->
-          <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M3 3h14v10H3z" />
-          </svg>
-        </div>
-      </Card>
+        </template>
 
-      <Card>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-secondary uppercase">Водителей</p>
-            <p class="text-2xl font-bold">{{ drivers.length }}</p>
+        <div>
+          <div class="text-sm text-gray-500 mb-2">VIN: {{ truck.vin }}</div>
+          <div v-if="truck.drivers.length">
+            <p class="font-medium mb-1">Drivers:</p>
+            <ul class="list-disc list-inside text-sm">
+              <li v-for="driver in truck.drivers" :key="driver.id">
+                {{ driver.name }} {{ driver.surname }} - {{ driver.phoneNumber }}
+              </li>
+            </ul>
           </div>
-          <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M5 3h10v10H5z" />
-          </svg>
+          <div v-else class="text-sm text-gray-400">No drivers assigned</div>
         </div>
-      </Card>
+      </UCard>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted } from 'vue'
-import { useDataStore } from '@/store/data'
-import Card from '@/components/Card.vue'
-
-const store = useDataStore()
-const { trucks, drivers } = store
-
-onMounted(() => {
-  store.loadData()
-})
-</script>

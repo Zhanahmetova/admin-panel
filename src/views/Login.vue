@@ -1,52 +1,53 @@
 <template>
-  <div class="flex h-screen items-center justify-center bg-background">
-    <form
-      class="bg-surface rounded-lg shadow-card p-8 w-full max-w-sm"
-      @submit.prevent="handleLogin"
-    >
-      <h2 class="text-2xl font-semibold mb-6 text-center">Вход</h2>
+  <div>
+    <main class="flex flex-col items-center justify-center p-4">
+      <h1 class="text-3xl">Welcome to the Login Page</h1>
+      <p class="mt-1">Please enter your credentials to log in.</p>
+      <UForm :validate="validate" :state="state" class="mt-10 space-y-4" @submit="onSubmit">
+        <UFormField label="Email" name="username">
+          <UInput v-model="state.username" />
+        </UFormField>
 
-      <label class="block mb-4">
-        <span class="text-sm text-secondary">Имя пользователя</span>
-        <input
-          v-model="username"
-          type="text"
-          class="mt-1 w-full p-2 border border-border rounded-md focus:ring-primary focus:border-primary"
-          placeholder="admin"
-        />
-      </label>
+        <UFormField label="Password" name="password">
+          <UInput v-model="state.password" type="password" />
+        </UFormField>
 
-      <label class="block mb-6">
-        <span class="text-sm text-secondary">Пароль</span>
-        <input
-          v-model="password"
-          type="password"
-          class="mt-1 w-full p-2 border border-border rounded-md focus:ring-primary focus:border-primary"
-          placeholder="••••••••"
-        />
-      </label>
-
-      <BaseButton primary class="w-full">Войти</BaseButton>
-    </form>
+        <UButton type="submit"> Submit </UButton>
+      </UForm>
+    </main>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import type { FormError, FormSubmitEvent } from '@nuxt/ui'
+import { reactive } from 'vue'
+import { useAuth } from '@/stores/auth.ts'
+import type { ICredentials } from '@/types'
 import { useRouter } from 'vue-router'
-import BaseButton from '@/components/BaseButton.vue'
 
-const username = ref('')
-const password = ref('')
-const auth = useAuthStore()
 const router = useRouter()
+const auth = useAuth()
+const state = reactive<ICredentials>({
+  username: '',
+  password: '',
+})
 
-function handleLogin() {
-  if (auth.login(username.value, password.value)) {
-    router.push('/dashboard')
-  } else {
-    alert('Неверные учётные данные')
+const validate = (state: ICredentials): FormError[] => {
+  const errors = []
+  if (!state.username) errors.push({ name: 'username', message: 'Required' })
+  if (!state.password) errors.push({ name: 'password', message: 'Required' })
+  return errors
+}
+
+const toast = useToast()
+async function onSubmit(event: FormSubmitEvent<typeof state>) {
+  await auth.login({
+    username: event.data.username,
+    password: event.data.password,
+  })
+  if (auth.isAuthorised) {
+    await router.replace('/')
   }
+  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
+  console.log(event.data)
 }
 </script>

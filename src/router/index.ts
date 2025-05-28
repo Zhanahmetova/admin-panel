@@ -1,34 +1,52 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '@/views/Login.vue'
-import { useAuthStore } from '@/store/auth'
-
-const routes = [
-  { path: '/', redirect: '/dashboard' },
-  { path: '/login', component: Login },
-  {
-    path: '/dashboard',
-    component: () => import('../views/Dashboard.vue'),
-    meta: { requiresAuth: true },
-  },
-  { path: '/trucks', component: () => import('../views/Truck.vue'), meta: { requiresAuth: true } },
-  {
-    path: '/drivers',
-    component: () => import('../views/Drivers.vue'),
-    meta: { requiresAuth: true },
-  },
-]
+import Dashboard from '@/views/Dashboard.vue'
+import { useAuth } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Dashboard,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/Login.vue'),
+    },
+    {
+      path: '/trucks',
+      name: 'trucks',
+      component: () => import('@/views/Trucks.vue'),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/drivers',
+      name: 'drivers',
+      component: () => import('@/views/Drivers.vue'),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+  ],
 })
 
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore()
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next('/login')
-  } else {
-    next()
+router.beforeEach((to, from) => {
+  // instead of having to check every route record with
+  // to.matched.some(record => record.meta.requiresAuth)
+  if (to.meta.requiresAuth && !useAuth().isAuthorised) {
+    // this route requires auth, check if logged in
+    return {
+      path: '/login',
+      // save the location we were at to come back later
+      query: { redirect: to.fullPath },
+    }
   }
 })
 
