@@ -3,7 +3,7 @@ import type { ICredentials } from '@/types'
 
 export const useAuth = defineStore('auth', {
   state: () => ({
-    isAuthorised: true,
+    isAuthorised: false,
   }),
   actions: {
     async login(credentials: ICredentials) {
