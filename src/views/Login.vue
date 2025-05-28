@@ -38,7 +38,6 @@ const validate = (state: ICredentials): FormError[] => {
   return errors
 }
 
-const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<typeof state>) {
   await auth.login({
     username: event.data.username,
@@ -47,7 +46,5 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
   if (auth.isAuthorised) {
     await router.replace('/')
   }
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
-  console.log(event.data)
 }
 </script>
