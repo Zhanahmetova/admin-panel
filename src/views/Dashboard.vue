@@ -23,7 +23,7 @@ const trucksWithDrivers = computed(() => {
         <template #header>
           <div class="flex items-center justify-between">
             <div class="font-semibold">#{{ truck.id }} - {{ truck.registeredPlate }}</div>
-            <UBadge :color="truck.type === 'construction' ? 'orange' : 'blue'" variant="subtle">
+            <UBadge :color="truck.type === 'construction' ? 'info' : 'neutral'" variant="subtle">
               {{ truck.type }}
             </UBadge>
           </div>
